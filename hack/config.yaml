@@ -1,0 +1,18 @@
+# CLI tool configuration, used in development environment only.
+# https://goframe.org/docs/cli
+
+gfcli:
+  gen:
+    dao:
+      - link: "sqlite::@file(resource/data/nav.db)"
+        prefix: "nav_"
+        tables: "nav_category,nav_site,nav_setting,nav_admin"
+        removePrefix: "nav_"
+        descriptionTag: true
+        jsonCase: "CamelLower"
+        stdTime: true
+
+  docker:
+    build: "-a amd64 -s linux -p temp -ew"
+    tagPrefixes:
+      - xyhelper/nav

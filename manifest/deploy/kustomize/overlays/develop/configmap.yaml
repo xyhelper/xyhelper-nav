@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: xyhelper-nav-config
+  labels:
+    app: xyhelper-nav
+data:
+  # Mounted over /app/manifest/config inside the container. Keep it aligned
+  # with manifest/config/config.yaml of the repository.
+  config.yaml: |
+    server:
+      address:     ":8000"
+      indexFiles:  ["index.html"]
+      openapiPath: "/api.json"
+      swaggerPath: "/swagger"
+
+      sessionIdName:       "xyhelper-nav-sid"
+      sessionMaxAge:       "7d"
+      sessionCookieMaxAge: "7d"
+      sessionPath:         "resource/data/sessions"
+
+    logger:
+      level:  "all"
+      stdout: true
+
+    database:
+      default:
+        link:  "sqlite::@file(resource/data/nav.db)"
+        debug: false

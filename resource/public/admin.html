@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="robots" content="noindex, nofollow">
+    <title>管理后台 · xyhelper-nav</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+<div class="ambient"></div>
+
+<!-- ------------------------------------------------------------------ login -->
+<div class="login-view" id="loginView" hidden>
+    <form class="login-card" id="loginForm" autocomplete="on">
+        <div class="login-logo">★</div>
+        <h1>管理后台</h1>
+        <p class="lead">登录后即可管理分类、站点与站点配置</p>
+        <div class="login-error" id="loginError"></div>
+        <div class="field">
+            <label for="loginUsername">用户名</label>
+            <input class="input" id="loginUsername" name="username" autocomplete="username" required>
+        </div>
+        <div class="field">
+            <label for="loginPassword">密码</label>
+            <input class="input" id="loginPassword" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button class="btn btn-primary" id="loginSubmit" type="submit">登录</button>
+        <div class="login-hint">
+            初始账号为 <strong>admin</strong> / <strong>admin123</strong>，登录后请在“账号安全”中及时修改密码。
+        </div>
+    </form>
+</div>
+
+<!-- -------------------------------------------------------------- dashboard -->
+<div class="admin" id="adminView" hidden>
+    <aside class="admin-side">
+        <div class="admin-brand">
+            <span class="brand-logo" id="sideLogo">★</span>
+            <span id="sideName">xyhelper-nav</span>
+        </div>
+
+        <nav class="admin-nav" id="adminNav">
+            <button type="button" data-view="sites" class="active">
+                <svg class="icon"><use href="assets/icons.svg#i-grid"></use></svg>站点管理
+            </button>
+            <button type="button" data-view="categories">
+                <svg class="icon"><use href="assets/icons.svg#i-folder"></use></svg>分类管理
+            </button>
+            <button type="button" data-view="settings">
+                <svg class="icon"><use href="assets/icons.svg#i-settings"></use></svg>站点设置
+            </button>
+            <button type="button" data-view="data">
+                <svg class="icon"><use href="assets/icons.svg#i-database"></use></svg>数据备份
+            </button>
+            <button type="button" data-view="account">
+                <svg class="icon"><use href="assets/icons.svg#i-user"></use></svg>账号安全
+            </button>
+        </nav>
+
+        <div class="admin-side-foot">
+            <a href="/" target="_blank" rel="noopener">
+                <svg class="icon"><use href="assets/icons.svg#i-external"></use></svg>查看导航页
+            </a>
+            <button type="button" id="logoutBtn">
+                <svg class="icon"><use href="assets/icons.svg#i-logout"></use></svg>退出登录
+            </button>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-top">
+            <div>
+                <h2 id="viewTitle">站点管理</h2>
+                <div class="cell-sub" id="viewSubtitle"></div>
+            </div>
+            <span class="spacer"></span>
+            <button class="btn btn-icon btn-ghost" id="themeToggle" type="button" title="切换主题" aria-label="切换主题">
+                <svg class="icon"><use href="assets/icons.svg#i-sun"></use></svg>
+            </button>
+        </header>
+
+        <!-- ---------------------------------------------------------- sites -->
+        <section class="panel active" id="panel-sites">
+            <div class="stat-grid" id="statGrid"></div>
+            <div class="toolbar">
+                <select class="select" id="siteCategoryFilter"></select>
+                <input class="input" id="siteKeyword" type="search" placeholder="按名称或网址筛选…">
+                <span class="spacer" style="flex:1"></span>
+                <button class="btn" type="button" id="refreshIconsBtn">
+                    <svg class="icon"><use href="assets/icons.svg#i-refresh"></use></svg>刷新图标
+                </button>
+                <button class="btn btn-primary" type="button" id="addSiteBtn">
+                    <svg class="icon"><use href="assets/icons.svg#i-plus"></use></svg>新增站点
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>站点</th>
+                        <th>地址</th>
+                        <th>分类</th>
+                        <th>排序</th>
+                        <th>状态</th>
+                        <th>点击</th>
+                        <th style="text-align:right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="siteTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ----------------------------------------------------- categories -->
+        <section class="panel" id="panel-categories">
+            <div class="toolbar">
+                <span class="cell-sub">分类用于对站点分组，删除分类会同时删除其下的全部站点。</span>
+                <span class="spacer" style="flex:1"></span>
+                <button class="btn btn-primary" type="button" id="addCategoryBtn">
+                    <svg class="icon"><use href="assets/icons.svg#i-plus"></use></svg>新增分类
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>分类</th>
+                        <th>描述</th>
+                        <th>站点数</th>
+                        <th>排序</th>
+                        <th>状态</th>
+                        <th>可见性</th>
+                        <th style="text-align:right">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody id="categoryTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- -------------------------------------------------------- settings -->
+        <section class="panel" id="panel-settings">
+            <form id="settingsForm">
+                <div class="card-block">
+                    <h3>基础信息</h3>
+                    <div class="sub">展示在导航页顶部与浏览器标签上。</div>
+                    <div class="settings-grid" id="settingsBasic"></div>
+                </div>
+                <div class="card-block">
+                    <h3>外观</h3>
+                    <div class="sub">主题色会同步应用到导航页与管理后台的强调色。</div>
+                    <div class="settings-grid" id="settingsAppearance"></div>
+                </div>
+                <div class="card-block">
+                    <h3>行为</h3>
+                    <div class="sub">控制导航页的交互细节。</div>
+                    <div class="settings-grid" id="settingsBehaviour"></div>
+                </div>
+                <div class="card-block">
+                    <h3>页脚与备案</h3>
+                    <div class="sub">展示在导航页底部。</div>
+                    <div class="settings-grid" id="settingsFooter"></div>
+                </div>
+                <div class="form-foot">
+                    <button class="btn btn-primary" type="submit">
+                        <svg class="icon"><use href="assets/icons.svg#i-check"></use></svg>保存设置
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ------------------------------------------------------------ data -->
+        <section class="panel" id="panel-data">
+            <div class="card-block">
+                <h3>导出数据</h3>
+                <div class="sub">将分类、站点与站点配置导出为 JSON 文件，便于备份或迁移。</div>
+                <button class="btn" type="button" id="exportBtn">
+                    <svg class="icon"><use href="assets/icons.svg#i-download"></use></svg>导出 JSON
+                </button>
+            </div>
+            <div class="card-block danger">
+                <h3>导入数据</h3>
+                <div class="sub">导入会<strong>覆盖</strong>当前全部分类与站点，请先做好备份。</div>
+                <div class="import-zone" id="importZone">
+                    <svg class="icon"><use href="assets/icons.svg#i-upload"></use></svg>
+                    <div>点击选择或拖拽 <strong>.json</strong> 备份文件到此处</div>
+                    <input type="file" id="importFile" accept="application/json,.json" hidden>
+                </div>
+            </div>
+        </section>
+
+        <!-- --------------------------------------------------------- account -->
+        <section class="panel" id="panel-account">
+            <div class="card-block">
+                <h3>账号资料</h3>
+                <div class="sub" id="accountMeta"></div>
+                <form id="profileForm">
+                    <div class="field" style="max-width:320px">
+                        <label for="profileNickname">昵称</label>
+                        <input class="input" id="profileNickname" required>
+                    </div>
+                    <button class="btn btn-primary" type="submit">保存资料</button>
+                </form>
+            </div>
+            <div class="card-block">
+                <h3>修改密码</h3>
+                <div class="sub">新密码长度至少 6 位，修改后请使用新密码重新登录。</div>
+                <form id="passwordForm">
+                    <div class="settings-grid">
+                        <div class="field">
+                            <label for="oldPassword">原密码</label>
+                            <input class="input" id="oldPassword" type="password" autocomplete="current-password" required>
+                        </div>
+                        <div class="field">
+                            <label for="newPassword">新密码</label>
+                            <input class="input" id="newPassword" type="password" autocomplete="new-password" minlength="6" required>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" type="submit">更新密码</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- ------------------------------------------------------------------ modal -->
+<div class="modal-mask" id="modalMask">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+            <h3 id="modalTitle">标题</h3>
+            <button class="btn btn-icon btn-ghost" type="button" id="modalClose" aria-label="关闭">
+                <svg class="icon"><use href="assets/icons.svg#i-close"></use></svg>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-foot">
+            <button class="btn" type="button" id="modalCancel">取消</button>
+            <button class="btn btn-primary" type="button" id="modalConfirm">确定</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-host" id="toastHost"></div>
+
+<script src="assets/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xyhelper-nav
+  labels:
+    app: xyhelper-nav
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xyhelper-nav
+  template:
+    metadata:
+      labels:
+        app: xyhelper-nav
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: nav
+          image: xyhelper/nav:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          volumeMounts:
+            # Persists the SQLite database and the login sessions.
+            - name: data
+              mountPath: /app/resource/data
+          readinessProbe:
+            httpGet:
+              path: /api/v1/nav/index
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1/nav/index
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: xyhelper-nav-data

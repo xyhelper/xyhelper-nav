@@ -1,0 +1,13 @@
+services:
+  nav:
+    build: .
+    image: xyhelper/nav:latest
+    container_name: xyhelper-nav
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      # Persists the SQLite database and the login sessions.
+      - ./data:/app/resource/data

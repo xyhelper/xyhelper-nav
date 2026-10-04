@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="color-scheme" content="dark light">
+    <title>导航</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="ambient" id="ambient"></div>
+
+<header class="topbar">
+    <div class="shell topbar-inner">
+        <a class="brand" href="./">
+            <span class="brand-logo" id="brandLogo">★</span>
+            <span class="brand-name" id="brandName">XYHelper 导航</span>
+        </a>
+        <div class="topbar-actions">
+            <button class="btn btn-icon btn-ghost" id="themeToggle" type="button" title="切换主题" aria-label="切换主题">
+                <svg class="icon"><use href="assets/icons.svg#i-moon"></use></svg>
+            </button>
+            <a class="btn btn-icon btn-ghost" href="admin" title="管理后台" aria-label="管理后台">
+                <svg class="icon"><use href="assets/icons.svg#i-settings"></use></svg>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero" id="top">
+        <div class="shell">
+            <h1 id="heroTitle">XYHelper 导航</h1>
+            <p id="heroSubtitle"></p>
+            <div class="announcement" id="announcement"></div>
+
+            <div class="search">
+                <div class="search-field">
+                    <svg class="icon"><use href="assets/icons.svg#i-search"></use></svg>
+                    <input id="searchInput" type="search" autocomplete="off" spellcheck="false"
+                           placeholder="搜索站点、描述或网址…">
+                    <span class="kbd">/</span>
+                </div>
+                <div class="search-meta">
+                    <span id="searchStat"></span>
+                    <span class="engines" id="engines"></span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="shell layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">分类</div>
+            <nav class="nav-list" id="navList"></nav>
+        </aside>
+
+        <div class="content" id="content">
+            <div class="grid" id="skeleton">
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+                <div class="skeleton skeleton-card"></div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="shell" id="footer"></div>
+</footer>
+
+<button class="to-top" id="toTop" type="button" title="回到顶部" aria-label="回到顶部">
+    <svg class="icon"><use href="assets/icons.svg#i-arrow-up"></use></svg>
+</button>
+
+<div class="toast-host" id="toastHost"></div>
+
+<script src="assets/js/app.js"></script>
+</body>
+</html>

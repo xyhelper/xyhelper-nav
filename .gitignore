@@ -1,0 +1,29 @@
+# --- Build output ---------------------------------------------------------
+/bin/
+/output/
+/temp/
+/temp.yaml
+/nav
+/main
+/main.exe
+/.cache-bin/
+
+# --- Runtime state --------------------------------------------------------
+# SQLite database, session files and other local data. Everything below this
+# directory is recreated automatically on first start.
+/resource/data/
+/manifest/output/
+
+# --- Editors and OS -------------------------------------------------------
+.idea/
+.settings/
+.vscode/
+.buildpath
+.project
+*.swp
+**/.DS_Store
+
+# --- Local configuration overrides ----------------------------------------
+# manifest/config/config.yaml is tracked on purpose; keep only personal
+# overrides out of the repository.
+**/config/config.local.yaml

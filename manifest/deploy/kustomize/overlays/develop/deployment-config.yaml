@@ -1,0 +1,19 @@
+# Strategic merge patch that mounts the overlay ConfigMap over the
+# configuration that ships inside the image.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xyhelper-nav
+spec:
+  template:
+    spec:
+      containers:
+        - name: nav
+          volumeMounts:
+            - name: config
+              mountPath: /app/manifest/config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: xyhelper-nav-config

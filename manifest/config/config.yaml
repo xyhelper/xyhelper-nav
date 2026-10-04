@@ -1,0 +1,47 @@
+# ----------------------------------------------------------------------------
+# xyhelper-nav configuration
+# https://goframe.org/docs/web/server-config-file-template
+# ----------------------------------------------------------------------------
+
+server:
+  address:     ":8000"
+  indexFiles:  ["index.html"]
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+  # Print the registered route table on startup, handy while developing.
+  dumpRouterMap: false
+
+  # --- Session (administration login) --------------------------------------
+  sessionIdName:     "xyhelper-nav-sid"
+  sessionMaxAge:     "7d"
+  sessionCookieMaxAge: "7d"
+  sessionPath:       "resource/data/sessions"
+
+  # The directory that holds the front-end pages and assets.
+  # It is resolved by the application itself so that a missing directory only
+  # disables the front-end instead of stopping the server.
+  # serverRoot: "resource/public"
+
+# https://goframe.org/docs/core/glog-config
+logger:
+  level:  "all"
+  stdout: true
+
+# https://goframe.org/docs/core/gdb-config-file
+# The database file, its schema and the seed data are created on first start.
+database:
+  default:
+    link:  "sqlite::@file(resource/data/nav.db)"
+    debug: false
+
+# Remote site icons are downloaded once by the server and then served from the
+# local storage directory, so that visitors never contact third party hosts.
+icon:
+  path:            "resource/data/icons"
+  timeout:         "8s"
+  # Reject responses larger than 512 KiB.
+  maxSize:         524288
+  # Wait at least this long before retrying a failed download.
+  retryInterval:   "10m"
+  # Refresh a cached icon after 30 days so that changed favicons are picked up.
+  refreshInterval: "720h"

@@ -1,0 +1,17 @@
+# Keep the build context small and free of local runtime state.
+.git
+.gitignore
+.idea
+.vscode
+
+# Local build output and Go caches.
+bin
+output
+temp
+.cache-bin
+.cache
+
+# Runtime state: the SQLite database and session files must never be baked
+# into the image, they are created on first start.
+resource/data
+manifest/output

@@ -1,9 +1,34 @@
 package boot
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+// TestRequireWritable covers the deployment guard that turns an unwritable data
+// directory into an actionable message instead of the driver level
+// "unable to open database file" error.
+func TestRequireWritable(t *testing.T) {
+	if err := requireWritable(""); err != nil {
+		t.Fatalf(`an empty directory means "no local database file", got: %v`, err)
+	}
+	writable := t.TempDir()
+	if err := requireWritable(writable); err != nil {
+		t.Fatalf("a temporary directory should be writable, got: %v", err)
+	}
+	if os.Getuid() == 0 {
+		t.Skip("permission checks do not apply to the root user")
+	}
+	readOnly := filepath.Join(writable, "readonly")
+	if err := os.Mkdir(readOnly, 0o555); err != nil {
+		t.Fatalf("preparing a read-only directory failed: %v", err)
+	}
+	if err := requireWritable(readOnly); err == nil {
+		t.Fatal("a read-only directory must be rejected")
+	}
+}
 
 func TestSplitStatements(t *testing.T) {
 	script := `

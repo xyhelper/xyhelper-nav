@@ -8,10 +8,12 @@ package boot
 import (
 	"context"
 	_ "embed"
+	"os"
 	"strings"
 
 	// Register the pure-Go SQLite driver used by the default configuration.
 	_ "github.com/gogf/gf/contrib/drivers/sqlite/v2"
+	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gfile"
 	"github.com/gogf/gf/v2/os/gtime"
@@ -29,22 +31,42 @@ var schemaSQL string
 
 // Init prepares database, schema and seed data.
 func Init(ctx context.Context) error {
-	if err := ensureDataDir(ctx); err != nil {
+	dataDir, err := ensureDataDir(ctx)
+	if err != nil {
 		return err
 	}
-	if err := migrate(ctx); err != nil {
+	if err = requireWritable(dataDir); err != nil {
 		return err
 	}
-	if err := patchSchema(ctx); err != nil {
+	if err = migrate(ctx); err != nil {
 		return err
 	}
-	if err := seedSettings(ctx); err != nil {
+	if err = patchSchema(ctx); err != nil {
 		return err
 	}
-	if err := seedAdmin(ctx); err != nil {
+	if err = seedSettings(ctx); err != nil {
+		return err
+	}
+	if err = seedAdmin(ctx); err != nil {
 		return err
 	}
 	return seedDemoData(ctx)
+}
+
+// requireWritable turns the most common deployment problem - a data directory
+// the process cannot write to - into an actionable message. Without this check
+// the driver only reports the rather cryptic "unable to open database file".
+func requireWritable(dir string) error {
+	if dir == "" || gfile.IsWritable(dir) {
+		return nil
+	}
+	return gerror.Newf(
+		"data directory %s is not writable by this process (uid=%d gid=%d).\n"+
+			"When the directory is mounted into a container, make sure its owner matches "+
+			"the user inside the container, for example:\n"+
+			"  mkdir -p ./data && sudo chown -R 10001:10001 ./data",
+		dir, os.Getuid(), os.Getgid(),
+	)
 }
 
 // schemaPatches lists columns that were introduced after the first release.
@@ -91,31 +113,38 @@ func patchSchema(ctx context.Context) error {
 	return nil
 }
 
-// ensureDataDir creates the directory of the SQLite file when it does not exist.
-// A missing configuration file is not fatal: the database may also be
-// configured programmatically, in which case its directory already exists.
-func ensureDataDir(ctx context.Context) error {
+// ensureDataDir creates the directory of the SQLite file when it does not exist
+// and returns it, so that its permissions can be verified before the driver
+// tries to open the database. A missing configuration file is not fatal: the
+// database may also be configured programmatically, in which case its directory
+// already exists.
+func ensureDataDir(ctx context.Context) (string, error) {
 	linkValue, err := g.Cfg().Get(ctx, "database.default.link")
 	if err != nil {
-		return nil
+		return "", nil
 	}
 	link := linkValue.String()
 	start := strings.Index(link, "@file(")
 	if start < 0 {
-		return nil
+		return "", nil
 	}
 	path := link[start+len("@file("):]
 	if end := strings.Index(path, ")"); end >= 0 {
 		path = path[:end]
 	}
 	if path == "" || path == ":memory:" {
-		return nil
+		return "", nil
 	}
 	dir := gfile.Dir(path)
-	if dir == "" || gfile.Exists(dir) {
-		return nil
+	if dir == "" {
+		return "", nil
 	}
-	return gfile.Mkdir(dir)
+	if !gfile.Exists(dir) {
+		if err = gfile.Mkdir(dir); err != nil {
+			return dir, err
+		}
+	}
+	return dir, nil
 }
 
 // migrate executes every statement of the embedded schema file.

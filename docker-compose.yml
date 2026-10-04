@@ -9,5 +9,8 @@ services:
     environment:
       - TZ=Asia/Shanghai
     volumes:
-      # Persists the SQLite database and the login sessions.
+      # Persists the SQLite database, the icon cache and the login sessions.
+      # The directory is created by Docker as root; the container entrypoint
+      # hands it over to the unprivileged "nav" user (uid 10001) on startup, so
+      # no manual chown is required.
       - ./data:/app/resource/data

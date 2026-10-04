@@ -84,7 +84,15 @@ docker run -d --name xyhelper-nav \
 docker compose up -d --build
 ```
 
-`docker-compose.yml` 已将 `./data` 挂载到容器内的 `/app/resource/data`，数据库与登录会话都会持久化在宿主机上，升级镜像不会丢失数据。
+`docker-compose.yml` 已将 `./data` 挂载到容器内的 `/app/resource/data`，数据库、图标缓存与登录会话都会持久化在宿主机上，升级镜像不会丢失数据。
+
+> **关于数据目录权限**：容器内的服务以非特权用户 `nav`（uid 10001）运行，而 `docker compose` 新建的宿主机目录默认属于 `root`。镜像的入口脚本在以 root 启动时会自动把挂载目录的属主交给 `nav`，然后再降权运行服务，因此 `docker compose up -d` 开箱即用，**不需要**手动 `chown`。日志中会出现一行 `xyhelper-nav: taking ownership of /app/resource/data for user nav`。
+>
+> 如果你用 `--user` 指定了其他 UID 运行容器，入口脚本无法自动修正属主，此时需自行保证目录可写：
+>
+> ```bash
+> mkdir -p ./data && sudo chown -R 10001:10001 ./data
+> ```
 
 ### 默认账号
 
@@ -339,6 +347,18 @@ kubectl apply -k manifest/deploy/kustomize/overlays/develop
 ```bash
 sqlite3 resource/data/nav.db "DELETE FROM nav_admin;"
 ```
+
+**Q：启动报 `unable to open database file: out of memory (14)`？**
+这是 SQLite 无法创建数据库文件（错误码 14 = `SQLITE_CANTOPEN`），几乎都是**挂载目录权限**问题：容器内以非特权用户 `nav`（uid 10001）运行，而 `docker compose` 新建的 `./data` 目录属主是 `root`，`nav` 无法在其中创建 `nav.db`。
+
+当前镜像的入口脚本会在以 root 启动时自动修正属主，正常情况下不会再出现；如果你用 `--user` 指定了别的 UID，或使用旧镜像，手动修正即可：
+
+```bash
+mkdir -p ./data && sudo chown -R 10001:10001 ./data
+docker compose up -d
+```
+
+程序在启动时会主动检查该目录是否可写，不可写时会直接给出带上述命令的提示，而不是抛出难以定位的驱动错误。
 
 **Q：站点图标不显示 / 显示为字母？**
 未填写图标地址时，服务端会尝试下载站点自身的 `/favicon.ico`；对方没有该文件（例如 Notion、ChatGPT）或下载失败时，就会回退为按名称生成的渐变字母图标。可以在后台为该站点手动填写一个可访问的图标地址，然后点击「刷新图标」。详见[图标缓存](#图标缓存)。

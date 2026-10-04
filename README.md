@@ -81,10 +81,40 @@ docker run -d --name xyhelper-nav \
 ### 方式三：Docker Compose（推荐）
 
 ```bash
+cp .env.example .env      # 按需修改端口等设置
 docker compose up -d --build
 ```
 
-`docker-compose.yml` 已将 `./data` 挂载到容器内的 `/app/resource/data`，数据库、图标缓存与登录会话都会持久化在宿主机上，升级镜像不会丢失数据。
+`docker-compose.yml` 已将 `${NAV_DATA_DIR:-./data}` 挂载到容器内的 `/app/resource/data`，数据库、图标缓存与登录会话都会持久化在宿主机上，升级镜像不会丢失数据。
+
+#### 通过 .env 配置（推荐）
+
+**不要直接修改 `docker-compose.yml`** —— 那是被 Git 追踪的文件，改动会在 `git pull` 时产生冲突。所有部署差异都写在 `.env` 里，Docker Compose 会自动读取，而 `.env` 已被 `.gitignore` 忽略：
+
+```bash
+cp .env.example .env
+```
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `NAV_PORT` | `8000` | 对外发布端口 |
+| `NAV_BIND` | `0.0.0.0` | 监听地址，置于反向代理后建议改为 `127.0.0.1` |
+| `NAV_DATA_DIR` | `./data` | 数据目录（数据库、图标缓存、会话） |
+| `TZ` | `Asia/Shanghai` | 日志时区 |
+| `NAV_IMAGE` | `xyhelper/nav:latest` | 镜像名称 |
+| `NAV_CONTAINER_NAME` | `xyhelper-nav` | 容器名，同机多实例时需区分 |
+| `NAV_RESTART` | `unless-stopped` | 重启策略 |
+
+例如只暴露给本机的反向代理：
+
+```dotenv
+NAV_BIND=127.0.0.1
+NAV_PORT=18080
+```
+
+改完执行 `docker compose up -d` 即可生效（无需重新构建镜像）。可用 `docker compose config` 预览最终生效的配置。
+
+> 需要更复杂的覆盖时，也可以新建 `docker-compose.override.yml`（Compose 会自动合并），但它**不被忽略**——如果要本地使用，请自行加入 `.gitignore`。
 
 > **关于数据目录权限**：容器内的服务以非特权用户 `nav`（uid 10001）运行，而 `docker compose` 新建的宿主机目录默认属于 `root`。镜像的入口脚本在以 root 启动时会自动把挂载目录的属主交给 `nav`，然后再降权运行服务，因此 `docker compose up -d` 开箱即用，**不需要**手动 `chown`。日志中会出现一行 `xyhelper-nav: taking ownership of /app/resource/data for user nav`。
 >
@@ -126,7 +156,9 @@ xyhelper-nav/
 │   ├── data/                   # 运行时数据（已 gitignore）：数据库、图标缓存、会话
 │   └── public/                 # 前端页面与静态资源
 ├── docs/images/                # 文档截图
+├── .env.example                # 部署配置模板（复制为 .env 使用，.env 不入库）
 ├── Dockerfile
+├── docker-entrypoint.sh        # 容器入口：修正数据目录属主后降权运行
 ├── docker-compose.yml
 └── main.go
 ```

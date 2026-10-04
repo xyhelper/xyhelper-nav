@@ -1,16 +1,18 @@
 services:
   nav:
     build: .
-    image: xyhelper/nav:latest
-    container_name: xyhelper-nav
-    restart: unless-stopped
+    image: ${NAV_IMAGE:-xyhelper/nav:latest}
+    container_name: ${NAV_CONTAINER_NAME:-xyhelper-nav}
+    restart: ${NAV_RESTART:-unless-stopped}
+    # Values come from .env (copy .env.example first). .env is git ignored, so
+    # changing the published port never conflicts with "git pull".
     ports:
-      - "8000:8000"
+      - "${NAV_BIND:-0.0.0.0}:${NAV_PORT:-8000}:8000"
     environment:
-      - TZ=Asia/Shanghai
+      - TZ=${TZ:-Asia/Shanghai}
     volumes:
       # Persists the SQLite database, the icon cache and the login sessions.
       # The directory is created by Docker as root; the container entrypoint
       # hands it over to the unprivileged "nav" user (uid 10001) on startup, so
       # no manual chown is required.
-      - ./data:/app/resource/data
+      - ${NAV_DATA_DIR:-./data}:/app/resource/data

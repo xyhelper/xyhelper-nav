@@ -12,6 +12,7 @@
 # SQLite database, session files and other local data. Everything below this
 # directory is recreated automatically on first start.
 /resource/data/
+/data/
 /manifest/output/
 
 # --- Editors and OS -------------------------------------------------------
@@ -24,6 +25,12 @@
 **/.DS_Store
 
 # --- Local configuration overrides ----------------------------------------
+# Deployment differences (published port, bind address, data directory, ...)
+# belong in .env, which is intentionally untracked so that "git pull" never
+# conflicts with them. Copy .env.example to get started.
+/.env
+/.env.local
+
 # manifest/config/config.yaml is tracked on purpose; keep only personal
 # overrides out of the repository.
 **/config/config.local.yaml

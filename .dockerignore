@@ -11,7 +11,13 @@ temp
 .cache-bin
 .cache
 
-# Runtime state: the SQLite database and session files must never be baked
-# into the image, they are created on first start.
+# Runtime state: the SQLite database, the icon cache and the session files must
+# never be baked into the image, they are created on first start.
 resource/data
+data
 manifest/output
+
+# Per-deployment settings. They are not part of the image and would otherwise
+# invalidate the build cache on every local change.
+.env
+.env.local
